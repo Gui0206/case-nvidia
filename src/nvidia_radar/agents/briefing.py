@@ -25,11 +25,19 @@ def build_briefing(diag: Diagnosis, sig: SignalSet, rag=None) -> str:
         L.append("> ⚠️ **AI-washing detectado** — narrativa de IA sem evidência técnica. Descartar/monitorar.\n")
 
     L.append("## Por que agora (Ponto de Alavancagem)")
-    L.append(f"- **Alavancagem** {l.leverage*100:.0f}/100 — {l.quadrant}")
-    L.append(f"- **Lab Displacement Risk** {l.ldr*100:.0f} · **Resgatabilidade NVIDIA** {l.res*100:.0f}")
+    L.append(f"- **Posição estratégica:** {l.quadrant}")
+    ldr_note = "" if l.ldr_fired else " _(sem sinal — valor base)_"
+    res_note = "" if l.res_fired else " _(sem sinal — valor base)_"
+    L.append(f"- **Lab Displacement Risk** {l.ldr*100:.0f}{ldr_note} · "
+             f"**Resgatabilidade NVIDIA** {l.res*100:.0f}{res_note} · "
+             f"**Alavancagem** {l.leverage*100:.0f}/100")
     L.append(f"- **Urgência de compute (CDS)** {c.score*100:.0f} (confiança {c.confidence})")
     if c.assumptions:
         L.append(f"  - inferido de: {', '.join(c.assumptions)}")
+    # síntese que evita ler posição estratégica e urgência como a mesma coisa
+    if c.score >= 0.5 and l.leverage < 0.3:
+        L.append("  - _nota: há pressão de compute, mas o encaixe estratégico é parcial — "
+                 "tratar como nutrição, não resgate imediato._")
     L.append("")
 
     L.append("## Diagnóstico de maturidade (AIMS)")

@@ -19,12 +19,12 @@ def _accumulate(sig: SignalSet, base: float, feats):
 def quadrant(ldr: float, res: float) -> str:
     hi_ldr, hi_res = ldr >= 0.55, res >= 0.55
     if hi_ldr and hi_res:
-        return "PONTO DE ALAVANCAGEM — ameaçada e salvável pela NVIDIA (prioridade máxima)"
+        return "PONTO DE ALAVANCAGEM — ameaçada pelos labs e resgatável pela stack NVIDIA (prioridade máxima)"
     if hi_ldr and not hi_res:
-        return "ameaça fora do alcance da NVIDIA (produto/distribuição) — despriorizar"
+        return "ameaçada, mas a solução está fora do alcance da NVIDIA (produto/distribuição) — despriorizar"
     if not hi_ldr and hi_res:
-        return "robusta, migraria fácil, sem urgência — nutrir com créditos"
-    return "já resolvida / não é o cliente — ignorar"
+        return "defensável e de fácil adoção da stack NVIDIA — nutrir com créditos"
+    return "baixo fit estratégico — prioridade baixa"
 
 
 def score_leverage(sig: SignalSet) -> LeverageScore:
