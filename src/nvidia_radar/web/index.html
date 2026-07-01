@@ -45,7 +45,20 @@
   #tip .track{flex:1;height:5px;background:#243021;border-radius:3px;overflow:hidden}
   #tip .fill{height:100%;background:var(--nv)}
   #brief{max-width:1220px;margin:16px auto 0;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-         font-size:12.5px;line-height:1.55;color:#cfe0cb;display:none}
+         font-size:12.5px;line-height:1.55;color:#cfe0cb;display:none;
+         background:#141b0d;border:1px solid var(--grid);border-radius:12px;padding:18px 22px}
+  #brief .md-h1{font-size:17px;font-weight:700;color:#eaf6e2;margin:2px 0 4px}
+  #brief .md-h2{font-size:13.5px;font-weight:700;color:var(--nv);margin:14px 0 4px;
+                border-top:1px solid var(--grid);padding-top:10px}
+  #brief .md-h3{font-size:13px;font-weight:700;color:#9fe000;margin:10px 0 2px}
+  #brief .md-li{padding-left:2px}
+  #brief .md-sp{height:.55em}
+  #brief strong{color:#eaf6e2}
+  #brief em{color:var(--muted);font-style:italic}
+  #brief code{color:#b7e06a}
+  #brief a{color:var(--nv);text-decoration:none}
+  #brief a:hover{text-decoration:underline}
+  #brief hr{border:0;border-top:1px solid var(--grid);margin:10px 0}
   .foot{max-width:1220px;margin:14px auto 0;color:#5f7a5d;font-size:11.5px;line-height:1.6}
   .pill{display:inline-block;background:#18210f;border:1px solid var(--grid);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted);margin:2px 4px 2px 0}
 </style>
@@ -117,7 +130,7 @@ function draw(D){
     const c=el('circle',{cx:px(d.res),cy:py(d.cds),r:rOf(d.aims),fill:ldrColor(d.ldr),'fill-opacity':.82,stroke:ldrColor(d.ldr),class:'bubble'});
     c.addEventListener('mousemove',e=>showTip(e,d));
     c.addEventListener('mouseleave',()=>tip.style.opacity=0);
-    c.addEventListener('click',()=>openBrief(d.name));
+    c.addEventListener('click',()=>openBrief(d.name,d.briefing));
     svg.appendChild(c);
     if(d.aims>=45){const t=el('text',{x:px(d.res),y:py(d.cds)-rOf(d.aims)-3,'text-anchor':'middle',class:'bubble-txt'});t.textContent=d.name.split(' (')[0];svg.appendChild(t);}
   });
@@ -134,13 +147,39 @@ function showTip(e,d){
   tip.style.left=e.clientX+'px';tip.style.top=e.clientY+'px';tip.style.opacity=1;
 }
 
-async function openBrief(name){
+function mdEsc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function mdInline(s){
+  s=mdEsc(s);
+  s=s.replace(/`([^`]+)`/g,(_,c)=>'<code>'+c+'</code>');
+  s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/\*([^*]+)\*/g,'<em>$1</em>');
+  s=s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  s=s.replace(/(^|[\s(])((?:https?:\/\/)[^\s)]+)/g,'$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+  return s;
+}
+function renderMarkdown(md){
+  return (md||'').split('\n').map(line=>{
+    const h=line.match(/^(#{1,3})\s+(.*)$/);
+    if(h)return '<div class="md-h'+h[1].length+'">'+mdInline(h[2])+'</div>';
+    if(/^\s*([-*_])\1{2,}\s*$/.test(line))return '<hr>';
+    const li=line.match(/^(\s*)[-*]\s+(.*)$/);
+    if(li)return '<div class="md-li">'+li[1]+'• '+mdInline(li[2])+'</div>';
+    if(line.trim()==='')return '<div class="md-sp"></div>';
+    return '<div class="md-p">'+mdInline(line)+'</div>';
+  }).join('');
+}
+
+async function openBrief(name, local){
   const box=document.getElementById('brief');
-  box.style.display='block';box.textContent='carregando briefing de '+name+'…';
+  box.style.display='block';
   box.scrollIntoView({behavior:'smooth'});
+  if(local){box.innerHTML=renderMarkdown(local);return;}    // briefing já embutido (map_data.js)
+  box.textContent='carregando briefing de '+name+'…';
   try{const r=await fetch('/api/brief?name='+encodeURIComponent(name));const d=await r.json();
-      box.textContent=d.briefing||('(sem briefing) '+(d.errors||[]).join('; '));}
-  catch(e){box.textContent='Briefing disponível via `radar serve` (API). Ou rode: radar brief "'+name+'"';}
+      if(d.briefing)box.innerHTML=renderMarkdown(d.briefing);
+      else box.textContent='(sem briefing) '+(d.errors||[]).join('; ');}
+  catch(e){box.textContent='Para ver o briefing, rode `radar serve` e abra http://127.0.0.1:8000 — '
+      +'ou gere o mapa auto-suficiente com `radar map` (embute os briefings). CLI: radar brief "'+name+'"';}
 }
 
 function list(D){
@@ -150,7 +189,7 @@ function list(D){
     row.innerHTML=`<div><span class="rank">${i+1}</span><span class="nm">${d.name.split(' (')[0]}</span> <span class="vt">· ${d.vertical}</span></div><span class="ipi">${d.ipi}</span>`;
     row.addEventListener('mousemove',e=>showTip(e,d));
     row.addEventListener('mouseleave',()=>tip.style.opacity=0);
-    row.addEventListener('click',()=>openBrief(d.name));
+    row.addEventListener('click',()=>openBrief(d.name,d.briefing));
     rl.appendChild(row);
   });
 }

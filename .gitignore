@@ -8,3 +8,4 @@ venv/
 data/qdrant/
 data/*.db
 .DS_Store
+ROTEIRO_VIDEO.md

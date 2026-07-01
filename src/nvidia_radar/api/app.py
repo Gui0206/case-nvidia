@@ -42,6 +42,13 @@ class Handler(BaseHTTPRequestHandler):
             elif u.path == "/api/ask":
                 from ..rag.pipeline import ask
                 self._send(json.dumps(ask(q.get("q", [""])[0]), ensure_ascii=False).encode())
+            elif u.path in ("/map_data.js", "/map_data.json"):
+                f = WEB_DIR / u.path.lstrip("/")
+                ctype = "application/javascript" if u.path.endswith(".js") else "application/json"
+                if f.exists():
+                    self._send(f.read_bytes(), f"{ctype}; charset=utf-8")
+                else:
+                    self.send_response(404); self.end_headers()
             else:
                 self.send_response(404); self.end_headers()
         except Exception as e:

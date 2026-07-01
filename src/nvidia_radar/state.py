@@ -14,6 +14,7 @@ class RadarState(TypedDict, total=False):
     evidence: list[dict]
     discovery_edge: float
     diagnosis: Any        # Diagnosis
+    _sig: Any             # SignalSet — passado entre diagnose → recommend/briefing
     briefing: str
     recommendations: list[dict]
     errors: list[str]

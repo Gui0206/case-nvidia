@@ -100,12 +100,35 @@ if __name__ == "__main__":
     print_report()
 
 
-def map_data(path: Path | None = None) -> list[dict]:
-    """Dado do Mapa de Alavancagem, produzido pelo motor de scoring real (não hardcoded)."""
+def map_data(path: Path | None = None, with_briefing: bool = True) -> list[dict]:
+    """Dado do Mapa de Alavancagem, produzido pelo motor de scoring real (não hardcoded).
+
+    Se with_briefing, embute o briefing de cada startup (mapa auto-suficiente, sem servidor).
+    """
+    from ..models import Evidence, SignalSet
+    briefing_fn = None
+    if with_briefing:
+        try:
+            from ..agents.briefing import build_briefing
+            from ..rag.pipeline import get_index
+            rag = get_index()
+            briefing_fn = lambda sig, dg: build_briefing(dg, sig, rag=rag)
+        except Exception:
+            briefing_fn = None
     rows = []
     for s in load_gold(path):
         d = diagnose_gold(s)
+        brief = ""
+        if briefing_fn:
+            sig = SignalSet(active=set(s["signals"]), modality=s.get("modality", "text"),
+                            model_class=s.get("model_class", "none"),
+                            evidence=[Evidence(claim="", source_url=u) for u in s.get("evidence", [])])
+            try:
+                brief = briefing_fn(sig, d)
+            except Exception:
+                brief = ""
         rows.append({
+            "briefing": brief,
             "name": s["name"], "vertical": s.get("vertical", ""),
             "one_liner": s.get("one_liner", ""), "expected": s["expected"],
             "res": round(d.leverage.res * 100), "cds": round(d.compute.score * 100),
