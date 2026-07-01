@@ -1,106 +1,115 @@
-"""Hybrid retrieval + reranking pipeline with citations."""
+"""RAG da base NVIDIA: busca híbrida (BM25 lexical, sempre; + vetorial se disponível) com
+rerank opcional e citações. BM25 é implementado em python puro — roda offline, sem deps.
+"""
 from __future__ import annotations
 
-import logging
-from dataclasses import dataclass, field
-from functools import lru_cache
+import math
+import re
+from pathlib import Path
 
-from ..config import get_settings
-from . import bm25 as bm25mod
-from . import vectorstore
-from .embeddings import get_embedder
-from .reranker import get_reranker
+from ..config import KB_DIR
 
-logger = logging.getLogger("nvidia_radar.rag")
+_TOKEN = re.compile(r"[a-zA-ZÀ-ÿ0-9\-]+")
 
 
-@dataclass
-class RetrievedChunk:
-    technology: str
-    text: str
-    source: str
-    section: str
-    score: float = 0.0
-    dense_rank: int | None = None
-    lexical_rank: int | None = None
-
-    def citation(self) -> dict:
-        snippet = self.text.split("\n", 1)[-1][:280].strip()
-        return {
-            "technology": self.technology,
-            "source": self.source,
-            "snippet": snippet,
-            "score": round(self.score, 4),
-        }
+def _tok(s: str) -> list[str]:
+    return [w.lower() for w in _TOKEN.findall(s)]
 
 
-def _rrf(rank_lists: list[list[int]], k: int = 60) -> dict[int, float]:
-    """Reciprocal Rank Fusion over several ranked id lists."""
-    fused: dict[int, float] = {}
-    for ids in rank_lists:
-        for rank, cid in enumerate(ids):
-            fused[cid] = fused.get(cid, 0.0) + 1.0 / (k + rank + 1)
-    return fused
+def _chunks_from(path: Path) -> list[dict]:
+    text = path.read_text(encoding="utf-8")
+    lines = [l for l in text.splitlines() if l.strip() and set(l.strip()) != {"-"}]
+    title = (lines[0].lstrip("# ").strip() if lines else path.stem) or path.stem
+    source = ""
+    m = re.search(r"Fontes?:\s*(\S+)", text)
+    if m:
+        source = m.group(1)
+    # chunk por parágrafo
+    out = []
+    for para in [p.strip() for p in text.split("\n\n") if p.strip()]:
+        out.append({"technology": title, "source": source, "text": para})
+    if not out:
+        out = [{"technology": title, "source": source, "text": text}]
+    return out
 
 
-class RagPipeline:
-    def __init__(self):
-        self.bm25 = bm25mod.load()
-        if self.bm25 is None:
-            raise RuntimeError(
-                "Knowledge base index not found. Run `radar build-kb` first."
-            )
-        self.chunks = self.bm25.chunks
-        self.embedder = get_embedder()
-        self.reranker = get_reranker()
+class RagIndex:
+    def __init__(self, kb_dir: Path | None = None):
+        self.docs: list[dict] = []
+        self.df: dict[str, int] = {}
+        self.N = 0
+        self.avgdl = 1.0
+        self._build(kb_dir or KB_DIR)
 
-    def search(self, query: str, top_k: int | None = None,
-               candidates: int | None = None) -> list[RetrievedChunk]:
-        s = get_settings()
-        top_k = top_k or s.radar_rag_top_k
-        candidates = candidates or s.radar_rag_candidates
+    def _build(self, kb_dir: Path):
+        if not kb_dir.exists():
+            return
+        for p in sorted(kb_dir.glob("*.md")):
+            for ch in _chunks_from(p):
+                ch["tokens"] = _tok(ch["text"] + " " + ch["technology"])
+                self.docs.append(ch)
+        self.N = len(self.docs)
+        if not self.N:
+            return
+        self.avgdl = sum(len(d["tokens"]) for d in self.docs) / self.N
+        for d in self.docs:
+            for w in set(d["tokens"]):
+                self.df[w] = self.df.get(w, 0) + 1
 
-        # --- dense (vector) ---
-        dense = vectorstore.search(self.embedder.embed_query(query), limit=candidates)
-        dense_ids = [cid for cid, _ in dense]
-        dense_rank = {cid: r for r, cid in enumerate(dense_ids)}
-
-        # --- lexical (BM25) ---
-        lexical = self.bm25.search(query, limit=candidates)
-        lexical_ids = [cid for cid, _ in lexical]
-        lexical_rank = {cid: r for r, cid in enumerate(lexical_ids)}
-
-        # --- fuse ---
-        fused = _rrf([dense_ids, lexical_ids])
-        if not fused:  # nothing matched either way
+    def search(self, query: str, top_k: int = 5) -> list[dict]:
+        if not self.N:
             return []
-        fused_ids = sorted(fused, key=lambda c: fused[c], reverse=True)[:candidates]
-
-        # --- rerank ---
-        docs = [self.chunks[cid]["text"] for cid in fused_ids]
-        reranked = self.reranker.rerank(query, docs, top_n=min(top_k, len(docs)))
-
-        results: list[RetrievedChunk] = []
-        for local_idx, score in reranked:
-            cid = fused_ids[local_idx]
-            c = self.chunks[cid]
-            results.append(
-                RetrievedChunk(
-                    technology=c["technology"],
-                    text=c["text"],
-                    source=c["source"],
-                    section=c["section"],
-                    score=score,
-                    dense_rank=dense_rank.get(cid),
-                    lexical_rank=lexical_rank.get(cid),
-                )
-            )
-        return results
-
-    def reranker_name(self) -> str:
-        return getattr(self.reranker, "name", "unknown")
+        q = _tok(query)
+        k1, b = 1.5, 0.75
+        scored = []
+        for d in self.docs:
+            dl = len(d["tokens"])
+            score = 0.0
+            for w in q:
+                if w not in self.df:
+                    continue
+                tf = d["tokens"].count(w)
+                if not tf:
+                    continue
+                idf = math.log(1 + (self.N - self.df[w] + 0.5) / (self.df[w] + 0.5))
+                score += idf * (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * dl / self.avgdl))
+            if score > 0:
+                scored.append((score, d))
+        scored.sort(key=lambda x: -x[0])
+        hits = [{"technology": d["technology"], "source": d["source"],
+                 "text": d["text"], "score": round(s, 3)} for s, d in scored[:top_k]]
+        return _maybe_rerank(query, hits)
 
 
-@lru_cache
-def get_pipeline() -> RagPipeline:
-    return RagPipeline()
+def _maybe_rerank(query: str, hits: list[dict]) -> list[dict]:
+    """Rerank opcional via Cohere (se COHERE_API_KEY + httpx). Caso contrário, mantém BM25."""
+    from ..config import get_settings
+    s = get_settings()
+    if not s.cohere_key or not hits:
+        return hits
+    try:
+        import httpx
+        r = httpx.post("https://api.cohere.com/v2/rerank",
+                       headers={"Authorization": f"Bearer {s.cohere_key}"},
+                       json={"model": "rerank-v3.5", "query": query,
+                             "documents": [h["text"] for h in hits], "top_n": len(hits)},
+                       timeout=30)
+        r.raise_for_status()
+        order = [x["index"] for x in r.json()["results"]]
+        return [hits[i] for i in order]
+    except Exception:
+        return hits
+
+
+_INDEX: RagIndex | None = None
+
+
+def get_index() -> RagIndex:
+    global _INDEX
+    if _INDEX is None:
+        _INDEX = RagIndex()
+    return _INDEX
+
+
+def ask(query: str, top_k: int = 5) -> list[dict]:
+    return get_index().search(query, top_k=top_k)

@@ -1,0 +1,732 @@
+{
+  "version": "2026-06",
+  "count": 27,
+  "startups": [
+    {
+      "name": "Tractian",
+      "vertical": "indústria",
+      "city": "São Paulo",
+      "modality": "vision",
+      "model_class": "none",
+      "expected": "AI-native",
+      "discovery_edge": 0.3,
+      "one_liner": "Manutenção preditiva industrial com sensores IoT + IA própria.",
+      "signals": [
+        "trains_or_finetunes",
+        "ml_repos_github",
+        "unique_data_source",
+        "data_scale_signal",
+        "data_flywheel_language",
+        "sells_outcome_not_tool",
+        "end_to_end_automation",
+        "deep_vertical_workflow",
+        "own_serving_infra",
+        "gpu_infra_signal",
+        "mlops_jobs",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "technical_moat",
+        "has_strong_data_moat",
+        "deep_vertical_lock",
+        "pain_is_scale_data",
+        "could_own_model_with_help"
+      ],
+      "evidence": [
+        "https://tractian.com/blog/tractian-avaliada-em-1-bilhao",
+        "https://blog.nvidia.com.br/blog/tractian-impulsiona-manutencao-preditiva-industrial-com-infraestrutura-de-ia-da-nvidia/"
+      ]
+    },
+    {
+      "name": "NeoSpace",
+      "vertical": "fintech",
+      "city": "São Paulo",
+      "modality": "data",
+      "model_class": "405b+",
+      "expected": "AI-native",
+      "discovery_edge": 0.35,
+      "one_liner": "Modelos fundacionais de GenAI para serviços financeiros (LDM).",
+      "signals": [
+        "trains_or_finetunes",
+        "ml_repos_github",
+        "unique_data_source",
+        "data_scale_signal",
+        "data_flywheel_language",
+        "sells_outcome_not_tool",
+        "end_to_end_automation",
+        "deep_vertical_workflow",
+        "own_serving_infra",
+        "gpu_infra_signal",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "technical_moat",
+        "has_strong_data_moat",
+        "deep_vertical_lock",
+        "could_own_model_with_help",
+        "open_migratable_stack"
+      ],
+      "evidence": [
+        "https://exame.com/inteligencia-artificial/citada-pela-nvidia-brasileira-neospace-quer-transformar-dados-de-empresas-em-cerebro-corporativo/"
+      ]
+    },
+    {
+      "name": "Nubank (nuFormer)",
+      "vertical": "fintech",
+      "city": "São Paulo",
+      "modality": "data",
+      "model_class": "70b",
+      "expected": "AI-native",
+      "discovery_edge": 0.1,
+      "note": "âncora (empresa pública, não startup)",
+      "one_liner": "Foundation model próprio (nuFormer) sobre dado transacional.",
+      "signals": [
+        "trains_or_finetunes",
+        "unique_data_source",
+        "data_scale_signal",
+        "data_flywheel_language",
+        "regulated_proprietary_data",
+        "sells_outcome_not_tool",
+        "end_to_end_automation",
+        "deep_vertical_workflow",
+        "own_serving_infra",
+        "gpu_infra_signal",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "technical_moat",
+        "has_strong_data_moat",
+        "deep_vertical_lock"
+      ],
+      "evidence": [
+        "https://international.nubank.com.br/pt-br/companhia/nubank-detalha-estrategia-de-transformacao-com-ia-baseada-em-dados-modelos-fundacionais-e-aconselhamento-financeiro-democratizado/"
+      ]
+    },
+    {
+      "name": "Kunumi",
+      "vertical": "saúde",
+      "city": "Belo Horizonte",
+      "modality": "data",
+      "model_class": "none",
+      "expected": "AI-native",
+      "discovery_edge": 0.3,
+      "one_liner": "Modelos proprietários de IA para saúde (fundador Nivio Ziviani).",
+      "signals": [
+        "trains_or_finetunes",
+        "ml_repos_github",
+        "unique_data_source",
+        "regulated_proprietary_data",
+        "sells_outcome_not_tool",
+        "deep_vertical_workflow",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "academic_research_root",
+        "technical_moat",
+        "has_strong_data_moat",
+        "pain_is_scale_data",
+        "could_own_model_with_help"
+      ],
+      "evidence": [
+        "https://www.kunumi.com/",
+        "https://dcc.ufmg.br/2927/"
+      ]
+    },
+    {
+      "name": "Portal Telemedicina",
+      "vertical": "saúde",
+      "city": "São Paulo",
+      "modality": "vision",
+      "model_class": "none",
+      "expected": "AI-native",
+      "discovery_edge": 0.4,
+      "one_liner": "Visão médica própria (TensorFlow) sobre 30M+ exames.",
+      "signals": [
+        "trains_or_finetunes",
+        "ml_repos_github",
+        "unique_data_source",
+        "data_scale_signal",
+        "regulated_proprietary_data",
+        "sells_outcome_not_tool",
+        "deep_vertical_workflow",
+        "own_serving_infra",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "technical_moat",
+        "has_strong_data_moat",
+        "deep_vertical_lock",
+        "pain_is_cost_latency",
+        "could_own_model_with_help"
+      ],
+      "evidence": [
+        "https://startup.google.com/intl/pt-BR_ALL/alumni/stories/portal-telemedicina/"
+      ]
+    },
+    {
+      "name": "NeuralMind",
+      "vertical": "jurídico",
+      "city": "Campinas",
+      "modality": "text",
+      "model_class": "7b",
+      "expected": "AI-native",
+      "discovery_edge": 0.55,
+      "one_liner": "Treinou BERTimbau e Jurema 7B (open-source no Hugging Face).",
+      "signals": [
+        "publishes_hf_models",
+        "trains_or_finetunes",
+        "publishes_papers",
+        "ml_repos_github",
+        "unique_data_source",
+        "sells_outcome_not_tool",
+        "deep_vertical_workflow",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "academic_research_root",
+        "technical_moat",
+        "has_strong_data_moat",
+        "pain_is_cost_latency",
+        "open_migratable_stack",
+        "could_own_model_with_help"
+      ],
+      "evidence": [
+        "https://neuralmind.ai/2025/02/20/neuralmind-e-escavador-desenvolvem-l%C2%B3m-um-modelo-de-linguagem-inovador-para-o-sistema-juridico-brasileiro/"
+      ]
+    },
+    {
+      "name": "Jusbrasil (Jus IA)",
+      "vertical": "jurídico",
+      "city": "Salvador",
+      "modality": "text",
+      "model_class": "70b",
+      "expected": "AI-native",
+      "discovery_edge": 0.35,
+      "one_liner": "Foundation model sobre 1,2bi de documentos jurídicos (c/ Maritaca).",
+      "signals": [
+        "trains_or_finetunes",
+        "unique_data_source",
+        "data_scale_signal",
+        "data_flywheel_language",
+        "sells_outcome_not_tool",
+        "end_to_end_automation",
+        "deep_vertical_workflow",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "technical_moat",
+        "has_strong_data_moat",
+        "deep_vertical_lock",
+        "pain_is_cost_latency",
+        "high_inference_volume",
+        "open_migratable_stack",
+        "could_own_model_with_help"
+      ],
+      "evidence": [
+        "https://ia.jusbrasil.com.br/sobre"
+      ]
+    },
+    {
+      "name": "Maritaca AI",
+      "vertical": "LLM",
+      "city": "Campinas",
+      "modality": "text",
+      "model_class": "70b",
+      "expected": "AI-native",
+      "discovery_edge": 0.45,
+      "one_liner": "Treina LLMs Sabiá em português; avaliados em benchmarks públicos.",
+      "signals": [
+        "publishes_hf_models",
+        "trains_or_finetunes",
+        "publishes_papers",
+        "ml_repos_github",
+        "unique_data_source",
+        "sells_outcome_not_tool",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "academic_research_root",
+        "technical_moat",
+        "has_strong_data_moat",
+        "pain_is_cost_latency",
+        "latency_cost_engineering",
+        "own_serving_infra",
+        "high_inference_volume",
+        "open_migratable_stack",
+        "could_own_model_with_help"
+      ],
+      "evidence": [
+        "https://www.maritaca.ai/en"
+      ]
+    },
+    {
+      "name": "WideLabs",
+      "vertical": "LLM",
+      "city": "São Paulo",
+      "modality": "multimodal",
+      "model_class": "70b",
+      "expected": "AI-native",
+      "discovery_edge": 0.55,
+      "one_liner": "Família Amazônia IA treinada do zero; infra NVIDIA/Oracle.",
+      "signals": [
+        "publishes_hf_models",
+        "trains_or_finetunes",
+        "publishes_papers",
+        "unique_data_source",
+        "gpu_infra_signal",
+        "own_serving_infra",
+        "sells_outcome_not_tool",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "technical_moat",
+        "has_strong_data_moat",
+        "pain_is_cost_latency",
+        "could_own_model_with_help",
+        "open_migratable_stack"
+      ],
+      "evidence": [
+        "https://www.mobiletime.com.br/noticias/06/08/2024/amazonia-ia/"
+      ]
+    },
+    {
+      "name": "Dharma AI",
+      "vertical": "LLM/SLM",
+      "city": "Rio de Janeiro",
+      "modality": "text",
+      "model_class": "small",
+      "expected": "AI-native",
+      "discovery_edge": 0.7,
+      "note": "verificar artefatos no HF/GitHub",
+      "one_liner": "Small Language Models próprios por indústria (com paper).",
+      "signals": [
+        "trains_or_finetunes",
+        "publishes_papers",
+        "ml_repos_github",
+        "sells_outcome_not_tool",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "technical_moat",
+        "latency_cost_engineering",
+        "open_migratable_stack",
+        "could_own_model_with_help"
+      ],
+      "evidence": [
+        "https://dharma-ai.com.br/en/dharma-ai-2/"
+      ]
+    },
+    {
+      "name": "Lume Robotics",
+      "vertical": "robótica",
+      "city": "Vitória",
+      "modality": "robotics",
+      "model_class": "none",
+      "expected": "AI-native",
+      "discovery_edge": 0.55,
+      "one_liner": "Percepção/deep learning próprio para autonomia; spin-off UFES.",
+      "signals": [
+        "trains_or_finetunes",
+        "ml_repos_github",
+        "unique_data_source",
+        "sells_outcome_not_tool",
+        "end_to_end_automation",
+        "deep_vertical_workflow",
+        "own_serving_infra",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "academic_research_root",
+        "technical_moat",
+        "has_strong_data_moat",
+        "deep_vertical_lock",
+        "pain_is_cost_latency",
+        "could_own_model_with_help"
+      ],
+      "evidence": [
+        "https://www.lumerobotics.ai/"
+      ]
+    },
+    {
+      "name": "TideWise",
+      "vertical": "robótica",
+      "city": "Rio de Janeiro",
+      "modality": "robotics",
+      "model_class": "none",
+      "expected": "AI-native",
+      "discovery_edge": 0.6,
+      "one_liner": "Autonomia marítima própria; USV Tupan (Marinha).",
+      "signals": [
+        "trains_or_finetunes",
+        "unique_data_source",
+        "sells_outcome_not_tool",
+        "end_to_end_automation",
+        "deep_vertical_workflow",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "technical_moat",
+        "has_strong_data_moat",
+        "deep_vertical_lock",
+        "pain_is_cost_latency",
+        "could_own_model_with_help"
+      ],
+      "evidence": [
+        "https://www.tidewise.io/"
+      ]
+    },
+    {
+      "name": "Cromai",
+      "vertical": "agro",
+      "city": "Campinas",
+      "modality": "vision",
+      "model_class": "none",
+      "expected": "AI-native",
+      "discovery_edge": 0.6,
+      "one_liner": "Visão computacional própria 'do zero' para manejo de plantas daninhas.",
+      "signals": [
+        "trains_or_finetunes",
+        "ml_repos_github",
+        "unique_data_source",
+        "data_scale_signal",
+        "sells_outcome_not_tool",
+        "deep_vertical_workflow",
+        "own_serving_infra",
+        "gpu_infra_signal",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "academic_research_root",
+        "technical_moat",
+        "has_strong_data_moat",
+        "deep_vertical_lock",
+        "could_own_model_with_help"
+      ],
+      "evidence": [
+        "https://www.cromai.com/"
+      ]
+    },
+    {
+      "name": "GuardionAI",
+      "vertical": "cyber",
+      "city": "São Paulo",
+      "modality": "text",
+      "model_class": "small",
+      "expected": "AI-native",
+      "discovery_edge": 0.65,
+      "one_liner": "Guardrails/firewall de runtime para agentes de IA; founders ex-Siri.",
+      "signals": [
+        "trains_or_finetunes",
+        "ml_repos_github",
+        "sells_outcome_not_tool",
+        "deep_vertical_workflow",
+        "ai_is_core_value",
+        "founder_ai_pedigree",
+        "technical_moat",
+        "regulated_proprietary_data",
+        "pain_is_governance",
+        "open_migratable_stack",
+        "could_own_model_with_help"
+      ],
+      "evidence": [
+        "https://guardion.ai/"
+      ]
+    },
+    {
+      "name": "CrewAI",
+      "vertical": "devtools/agentes",
+      "city": "São Paulo",
+      "modality": "text",
+      "model_class": "none",
+      "expected": "AI-native",
+      "discovery_edge": 0.4,
+      "note": "fronteira: infra de agentes, NÃO treina modelos",
+      "one_liner": "Framework open-source de sistemas multi-agente (amplamente adotado).",
+      "signals": [
+        "ml_repos_github",
+        "technical_moat",
+        "founder_ai_pedigree",
+        "ai_is_core_value",
+        "deep_vertical_workflow",
+        "end_to_end_automation",
+        "open_migratable_stack",
+        "uses_only_external_api"
+      ],
+      "evidence": [
+        "https://en.wikipedia.org/wiki/CrewAI"
+      ]
+    },
+    {
+      "name": "Magie",
+      "vertical": "fintech",
+      "city": "São Paulo",
+      "modality": "text",
+      "model_class": "70b",
+      "expected": "AI-enabled",
+      "discovery_edge": 0.55,
+      "note": "fronteira: distribuição no WhatsApp sobre API",
+      "one_liner": "Assistente financeira no WhatsApp; usa API da OpenAI.",
+      "signals": [
+        "uses_only_external_api",
+        "thin_ui_over_llm",
+        "ai_is_primary_feature",
+        "unique_data_source",
+        "external_api_plus_growth",
+        "high_inference_volume",
+        "latency_sensitive_product",
+        "pain_is_cost_latency",
+        "open_migratable_stack",
+        "no_data_moat",
+        "generic_use_case",
+        "thin_llm_wrapper",
+        "no_proprietary_data"
+      ],
+      "evidence": [
+        "https://startups.com.br/negocios/fintech/powered-by-ia-magie-quer-ser-banco-dentro-do-whatsapp/"
+      ]
+    },
+    {
+      "name": "Robô Laura",
+      "vertical": "saúde",
+      "city": "Curitiba",
+      "modality": "data",
+      "model_class": "none",
+      "expected": "AI-enabled",
+      "discovery_edge": 0.45,
+      "one_liner": "ML sobre dado clínico proprietário; alerta de deterioração/sepse.",
+      "signals": [
+        "unique_data_source",
+        "regulated_proprietary_data",
+        "sells_outcome_not_tool",
+        "deep_vertical_workflow",
+        "ai_is_primary_feature",
+        "pain_is_scale_data",
+        "marketing_only_ai_claim",
+        "could_own_model_with_help"
+      ],
+      "evidence": [
+        "https://gazzconecta.com.br/gazz-conecta/robo-laura-tecnologia-e-saude/"
+      ]
+    },
+    {
+      "name": "Blip",
+      "vertical": "voz/atendimento",
+      "city": "Belo Horizonte",
+      "modality": "voice",
+      "model_class": "70b",
+      "expected": "AI-enabled",
+      "discovery_edge": 0.3,
+      "note": "fronteira: orquestra NLP de terceiros",
+      "one_liner": "IA conversacional líder no WhatsApp; orquestra Watson/Dialogflow/Gemini.",
+      "signals": [
+        "unique_data_source",
+        "data_scale_signal",
+        "ai_is_primary_feature",
+        "end_to_end_automation",
+        "uses_only_external_api",
+        "high_inference_volume",
+        "latency_sensitive_product",
+        "external_api_plus_growth",
+        "pain_is_cost_latency",
+        "could_own_model_with_help",
+        "open_migratable_stack"
+      ],
+      "evidence": [
+        "https://www.blip.ai/en/platform/"
+      ]
+    },
+    {
+      "name": "Alana AI",
+      "vertical": "voz/atendimento",
+      "city": "São Paulo",
+      "modality": "voice",
+      "model_class": "none",
+      "expected": "AI-enabled",
+      "discovery_edge": 0.5,
+      "note": "verificar 'IA própria' multimodal",
+      "one_liner": "Automação de marketing/atendimento; afirma IA multimodal própria.",
+      "signals": [
+        "ai_is_primary_feature",
+        "marketing_only_ai_claim",
+        "uses_only_external_api",
+        "unique_data_source",
+        "latency_sensitive_product",
+        "external_api_plus_growth",
+        "generic_use_case",
+        "no_data_moat"
+      ],
+      "evidence": [
+        "https://www.alanaai.com/"
+      ]
+    },
+    {
+      "name": "BotBot",
+      "vertical": "robótica",
+      "city": "São Paulo",
+      "modality": "vision",
+      "model_class": "none",
+      "expected": "AI-enabled",
+      "discovery_edge": 0.75,
+      "note": "early-stage",
+      "one_liner": "Módulo de IA cognitiva acoplável a robôs industriais.",
+      "signals": [
+        "unique_data_source",
+        "sells_outcome_not_tool",
+        "deep_vertical_workflow",
+        "ai_is_primary_feature",
+        "own_serving_infra",
+        "pain_is_cost_latency"
+      ],
+      "evidence": [
+        "https://www.spacemoney.com.br/economia/startup-brasileira-modulo-ia-robos-industriais/"
+      ]
+    },
+    {
+      "name": "Semantix",
+      "vertical": "dados",
+      "city": "São Paulo",
+      "modality": "data",
+      "model_class": "none",
+      "expected": "AI-enabled",
+      "discovery_edge": 0.25,
+      "one_liner": "Plataforma de dados + ML madura; sem foundation model próprio.",
+      "signals": [
+        "ml_repos_github",
+        "unique_data_source",
+        "ai_is_primary_feature",
+        "sells_outcome_not_tool",
+        "mlops_jobs",
+        "no_data_moat"
+      ],
+      "evidence": [
+        "https://exame.com/insight/semantix-empresa-brasileira-de-ia-estreia-na-nasdaq-avaliada-em-us-1-bilhao/p"
+      ]
+    },
+    {
+      "name": "Cortex Intelligence",
+      "vertical": "dados",
+      "city": "São Paulo",
+      "modality": "data",
+      "model_class": "none",
+      "expected": "AI-enabled",
+      "discovery_edge": 0.35,
+      "one_liner": "Go-to-market intelligence: IA sobre dado agregado proprietário.",
+      "signals": [
+        "unique_data_source",
+        "data_scale_signal",
+        "ai_is_primary_feature",
+        "sells_outcome_not_tool",
+        "deep_vertical_workflow"
+      ],
+      "evidence": [
+        "https://www.cortex-intelligence.com/en/"
+      ]
+    },
+    {
+      "name": "Gupy",
+      "vertical": "RH",
+      "city": "São Paulo",
+      "modality": "text",
+      "model_class": "none",
+      "expected": "AI-enabled",
+      "discovery_edge": 0.3,
+      "one_liner": "Recrutamento com IA ('Gaia'): matching próprio sobre dado de currículos.",
+      "signals": [
+        "ml_repos_github",
+        "unique_data_source",
+        "data_scale_signal",
+        "ai_is_primary_feature",
+        "sells_outcome_not_tool",
+        "deep_vertical_workflow",
+        "mlops_jobs"
+      ],
+      "evidence": [
+        "https://startup.google.com/intl/pt-BR_ALL/alumni/stories/gupy/"
+      ]
+    },
+    {
+      "name": "Olist (Lis)",
+      "vertical": "retail",
+      "city": "Curitiba",
+      "modality": "text",
+      "model_class": "none",
+      "expected": "AI-enabled",
+      "discovery_edge": 0.3,
+      "one_liner": "ERP com agentes de IA ('Lis') sobre dado do ERP.",
+      "signals": [
+        "unique_data_source",
+        "ai_is_primary_feature",
+        "end_to_end_automation",
+        "uses_only_external_api",
+        "thin_ui_over_llm",
+        "external_api_plus_growth"
+      ],
+      "evidence": [
+        "https://olist.com/agentes/"
+      ]
+    },
+    {
+      "name": "Pipefy",
+      "vertical": "devtools",
+      "city": "Curitiba",
+      "modality": "text",
+      "model_class": "none",
+      "expected": "AI-enabled",
+      "discovery_edge": 0.3,
+      "one_liner": "Automação no-code com agentes de IA sobre LLM de terceiros.",
+      "signals": [
+        "ai_is_primary_feature",
+        "end_to_end_automation",
+        "uses_only_external_api",
+        "thin_ui_over_llm",
+        "external_api_plus_growth",
+        "generic_use_case",
+        "no_proprietary_data"
+      ],
+      "evidence": [
+        "https://www.pipefy.com/ai/"
+      ]
+    },
+    {
+      "name": "Ubots",
+      "vertical": "voz/atendimento",
+      "city": "Porto Alegre",
+      "modality": "text",
+      "model_class": "none",
+      "expected": "non-AI",
+      "discovery_edge": 0.4,
+      "note": "candidata a AI-washing",
+      "one_liner": "Builder de chatbots; 'plataforma baseada em IA' sem sinal técnico.",
+      "signals": [
+        "marketing_only_ai_claim",
+        "ai_is_primary_feature",
+        "uses_only_external_api",
+        "thin_ui_over_llm",
+        "thin_llm_wrapper",
+        "no_proprietary_data",
+        "generic_use_case",
+        "commodity_modality",
+        "no_data_moat",
+        "pure_api_no_optimization",
+        "easily_replicable_by_labs"
+      ],
+      "evidence": [
+        "https://www.ubots.com.br/"
+      ]
+    },
+    {
+      "name": "Robbu",
+      "vertical": "voz/atendimento",
+      "city": "São Paulo",
+      "modality": "text",
+      "model_class": "none",
+      "expected": "non-AI",
+      "discovery_edge": 0.4,
+      "note": "candidata a AI-washing",
+      "one_liner": "Omnichannel de atendimento com IA de terceiros; sem modelo próprio.",
+      "signals": [
+        "marketing_only_ai_claim",
+        "ai_is_primary_feature",
+        "uses_only_external_api",
+        "thin_ui_over_llm",
+        "thin_llm_wrapper",
+        "no_proprietary_data",
+        "generic_use_case",
+        "commodity_modality",
+        "no_data_moat",
+        "pure_api_no_optimization",
+        "easily_replicable_by_labs"
+      ],
+      "evidence": [
+        "https://robbu.com.br/"
+      ]
+    }
+  ]
+}

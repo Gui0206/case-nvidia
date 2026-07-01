@@ -1,149 +1,107 @@
 # NVIDIA Startup AI Radar
 
-Plataforma **multi-agente** que descobre startups brasileiras com potencial **AI-native**,
-coleta dados públicos, **pontua a maturidade de IA**, diagnostica os gaps de stack e
-**recomenda tecnologias NVIDIA** — gerando um briefing executivo para o time de
-**Startups & VCs / NVIDIA Inception** no Brasil.
+Plataforma multi-agente que encontra a startup brasileira onde **a NVIDIA muda o desfecho** — não a mais AI-native (essa é a que menos precisa da NVIDIA), mas a que está no **Ponto de Alavancagem**: ameaçada pelos grandes labs, resgatável pela stack NVIDIA, e prestes a consumir compute.
 
-> Pergunta norteadora: *como a NVIDIA pode identificar, atrair e nutrir startups brasileiras
-> AI-native num cenário em que os grandes labs ameaçam startups que dependem só de wrappers de LLM?*
+> **Pergunta norteadora:** como a NVIDIA identifica, atrai e nutre startups AI-native num cenário em que os grandes labs ameaçam quem depende só de wrappers de LLM?
+>
+> **Resposta deste projeto:** um índice único e auditável — o **IPI (Índice de Prioridade Inception)** — que funde 4 lentes (Realness · Alavancagem · Urgência de compute · Descoberta antecipada) e ordena a fila de quem o gerente deve chamar nesta semana.
 
----
-
-## ✨ O que o sistema faz
-
-1. **Descobre** startups a partir de uma consulta em linguagem natural (busca web pública).
-2. **Coleta** informações públicas (site, blog, notícias) com rastreabilidade de fontes.
-3. **Estrutura** os dados (empresa, setor, founders, funding, clientes, tecnologias de IA).
-4. **Classifica** a empresa em `AI-native` / `AI-enabled` / `non-AI` com um **score de maturidade
-   AI-native de 6 dimensões** e um **Lab Displacement Risk** (risco de virar irrelevante frente
-   aos grandes labs) — *o diferencial do projeto*.
-5. **Valida** se as afirmações têm evidência suficiente (com loop de reforço de coleta).
-6. **Consulta** uma base de conhecimento NVIDIA via **RAG híbrido (vetorial + BM25) com reranking**.
-7. **Recomenda** as tecnologias NVIDIA certas para cada gap, com justificativa técnica/negócio,
-   prioridade, complexidade, próxima ação e **citações**.
-8. **Gera** briefings executivos por startup + um panorama de portfólio priorizado.
+Leia o racional completo em [`docs/CONTEXTO_E_DECISOES.md`](docs/CONTEXTO_E_DECISOES.md).
 
 ---
 
-## 🏗️ Arquitetura (LangGraph)
+## O diferencial em 30 segundos
 
-```
-Consulta do usuário
-   └─ Search Planner ─ Scraper ─[tem fontes?]─ Extractor ─ Classifier ─ Evidence Validator
-                          ▲                                                      │
-                          └──────────── reforço de coleta (retry, máx. 2) ◄──────┤ (evidência fraca?)
-                                                                                 │
-                          NVIDIA RAG (híbrido + rerank) ─ Recommendation ─ Briefing ─► Dashboard
-```
+- **AIMS** — maturidade AI-native em 6 dimensões, **determinística e rastreável** (o número não é chutado por LLM; vem de regras sobre features, cada uma ligada a evidência com URL).
+- **Alavancagem = LDR × Resgatabilidade** — a inversão central: risco de displacement *multiplicado* por "a NVIDIA consegue reverter?". LDR alto só é bom se for resgatável.
+- **CDS (Compute Demand Score)** — estimativa **direcional com confiança e premissas visíveis** de quanto/quando a startup vai consumir GPU. Sem falsa precisão.
+- **Detector de AI-washing** — separa quem *diz* usar IA de quem *faz*.
+- **IPI** — funde tudo; recalibrável pelo feedback do gerente (flywheel).
 
-Estado tipado, transições condicionais, **loop de retry com limite**, checkpointer
-(`MemorySaver`) e emissão de progresso ao vivo — tudo em [`graph.py`](src/nvidia_radar/graph.py).
-
-Os 8 agentes vivem em [`src/nvidia_radar/agents/`](src/nvidia_radar/agents/).
+Resultado no gold set de 27 startups BR reais: **Spearman ρ = 0.85**, **acurácia de tier 93%**, **AI-washing precision/recall 1.00**.
 
 ---
 
-## 🚀 Setup
-
-Requer Python 3.10+ (testado em 3.12 via [`uv`](https://github.com/astral-sh/uv)).
-**Só `OPENROUTER_API_KEY` é obrigatório** — tudo o mais degrada graciosamente.
+## Rodar (o núcleo não precisa de NENHUMA chave de API)
 
 ```bash
-# 1. ambiente + dependências
-uv venv --python 3.12 .venv
-uv pip install --python .venv -e .
-
-# 2. configuração
-cp .env.example .env        # edite e coloque sua OPENROUTER_API_KEY
-
-# 3. construa a base de conhecimento NVIDIA (vetorial + BM25)
-.venv/bin/radar build-kb
-
-# 4. suba o dashboard
-.venv/bin/radar serve       # http://127.0.0.1:8000
+pip install -e .                      # sem dependências obrigatórias
+radar status                          # mostra camadas ativas
+radar eval                            # avalia o gold set (ranking + correlação)
+radar calibrate                       # calibra limiares de tier pelo gold (flywheel)
+radar brief "Magie"                   # briefing executivo de uma startup
+radar score "Tractian"                # diagnóstico completo em JSON
+radar ask "reduzir latência de LLM"   # consulta o RAG da base NVIDIA
+radar map                             # gera o dado do Mapa de Alavancagem
+radar serve                           # dashboard em http://127.0.0.1:8000
 ```
 
-### CLI
+Sem `pip install`: `PYTHONPATH=src python -m nvidia_radar.eval.gold_eval`.
 
-```bash
-radar status                                   # mostra provedores ativos e tamanho da base
-radar build-kb                                 # ingere data/nvidia_kb/ no Qdrant + BM25
-radar run "fintechs de IA para crédito" -n 3   # pipeline completo no terminal
-radar ask "reduzir latência de inferência"     # consulta direta ao RAG (híbrido + rerank)
-radar serve                                     # API + dashboard
+### Camadas opcionais (degradação graciosa)
+Configure `.env` (veja `.env.example`) para habilitar:
+- **LLM** (`OPENROUTER_API_KEY` ou `NVIDIA_API_KEY`) — enriquece extração e nuance do classificador.
+- **RAG avançado** (`COHERE_API_KEY`) — reranking Cohere sobre o BM25 local.
+- **Descoberta** (`GITHUB_TOKEN`, `HUGGINGFACE_TOKEN`) — sinais primários (o "achar cedo").
+- **Scraping** (`.[scrape]`, `FIRECRAWL_API_KEY`) — coleta pública real.
+- **Grafo** (`.[graph]`) — orquestração via LangGraph (senão roda o pipeline sequencial equivalente).
+
+Nada disso é necessário para demonstrar o diferencial: o núcleo roda 100% offline.
+
+---
+
+## Arquitetura
+
+```
+Descoberta (sinais primários: GitHub/HF/arXiv/vagas)  ─┐
+                                                        ▼
+  Search Planner → Scraper → Extractor → [SignalSet + evidências]
+                                              │
+        ┌──────────── DIAGNÓSTICO (scoring/) ─┴───────────────┐
+        │  AIMS (Realness) ∥ LDR×Resgate (Alavancagem) ∥ CDS  │
+        │        ∥ AI-washing ───────► compute IPI            │
+        └──────────────────────────┬──────────────────────────┘
+                                    ▼
+   NVIDIA RAG (BM25 + rerank) → Recommendation → Wedge → Briefing
+                                    ▼
+   Mapa de Alavancagem (resgatabilidade × urgência) + fila por IPI
+                                    ▼
+   Feedback do gerente ──► flywheel (recalibra pesos e limiares)
 ```
 
----
-
-## 🔌 Provedores e LLMs (via OpenRouter)
-
-| Função | Padrão | Configurável por |
-|---|---|---|
-| LLM (raciocínio) | `anthropic/claude-sonnet-4.6` | `RADAR_LLM_MODEL` |
-| LLM (rápido/volume) | `anthropic/claude-haiku-4.5` | `RADAR_LLM_FAST_MODEL` |
-| Busca web | DuckDuckGo (grátis) → **Tavily** se `TAVILY_API_KEY` | `.env` |
-| Extração de páginas | trafilatura + BeautifulSoup → **Firecrawl** se `FIRECRAWL_API_KEY`; **Playwright** se instalado | `.env` |
-| Embeddings | `BAAI/bge-small-en-v1.5` (fastembed, local, ONNX) | `RADAR_EMBED_MODEL` |
-| Vector DB | Qdrant (embedded) | — |
-| Lexical | BM25 (`rank-bm25`) | — |
-| Reranking | cross-encoder local (ONNX) → **Cohere Rerank** se `COHERE_API_KEY` | `.env` |
-| Banco estruturado | SQLite → **PostgreSQL** se `DATABASE_URL` | `.env` |
-
-Todas as chamadas de LLM passam pelo **OpenRouter** ([`llm.py`](src/nvidia_radar/llm.py)).
-
----
-
-## 🎯 Diferencial — *AI-Native Maturity Radar* + *Lab Displacement Risk*
-
-Em vez de só rotular, o sistema pontua **por que** uma startup é (ou não) AI-native, numa
-rubrica transparente e ancorada em evidências, com 6 dimensões (0–100):
-
-- **Dados proprietários** · **Engenharia de modelos** (treina/fine-tuna/post-traina?) ·
-  **Otimização de inferência** · **Profundidade de workflow** · **IA no produto** · **Defensibilidade**
-
-E quantifica o **risco de deslocamento pelos grandes labs** (o "wrapper risk"), com vetores
-de ameaça e moats. Isso responde diretamente à pergunta *"por que nem toda startup é AI-native?"*
-e transforma o radar em uma ferramenta de **priorização de quem o Inception deve nutrir primeiro**.
-Visualizado no dashboard como gráfico radar + gauge de risco + `inception_fit`.
-
----
-
-## 📦 Mapa dos entregáveis
+## Mapa dos entregáveis do case
 
 | Entregável | Onde |
 |---|---|
-| 1. Pipeline de scraping | [`scraping/`](src/nvidia_radar/scraping/) + [`agents/scraper.py`](src/nvidia_radar/agents/scraper.py) |
-| 2. Sistema multiagente (LangGraph) | [`graph.py`](src/nvidia_radar/graph.py) + [`agents/`](src/nvidia_radar/agents/) |
-| 3. RAG NVIDIA com reranking | [`rag/`](src/nvidia_radar/rag/) + [`data/nvidia_kb/`](data/nvidia_kb/) |
-| 4. Motor de recomendação | [`agents/recommender.py`](src/nvidia_radar/agents/recommender.py) |
-| 5. Interface web | [`api/app.py`](src/nvidia_radar/api/app.py) + [`frontend/index.html`](frontend/index.html) |
-| 6. Diferencial | Maturity Radar + Lab Displacement Risk ([`agents/classifier.py`](src/nvidia_radar/agents/classifier.py)) |
+| 1. Pipeline de scraping / descoberta | `signals/connectors.py`, `scraping/fetch.py`, `agents/scraper.py` |
+| 2. Sistema multiagente (LangGraph) | `graph.py`, `agents/`, `state.py` |
+| 3. RAG NVIDIA com reranking | `rag/pipeline.py`, `data/nvidia_kb/` |
+| 4. Motor de recomendação | `agents/recommender.py` |
+| 5. Interface web | `api/app.py`, `web/index.html` (Mapa de Alavancagem) |
+| **6. Diferencial** | **`scoring/` (AIMS + LDR×RES + CDS + IPI) + AI-washing + `eval/` (gold + calibração)** |
 
----
-
-## 🗂️ Estrutura
+## Estrutura
 
 ```
 src/nvidia_radar/
-  config.py  llm.py  models.py  state.py  graph.py  cli.py
-  agents/     8 agentes (planner, scraper, extractor, classifier,
-              evidence_validator, rag_agent, recommender, briefing)
-  scraping/   search.py (Tavily/DDG) · fetch.py (trafilatura/bs4/Firecrawl/Playwright)
-  rag/        embeddings · vectorstore (Qdrant) · bm25 · reranker · pipeline · ingest
-  db/         store.py (SQLite/Postgres)
-  api/        app.py (FastAPI)
-data/nvidia_kb/   19 documentos da base de conhecimento NVIDIA
-frontend/         dashboard single-page (Chart.js)
+  config.py  models.py  state.py  graph.py  llm.py  cli.py
+  scoring/    features.py aims.py leverage.py cds.py ipi.py engine.py confidence.py
+  agents/     recommender.py briefing.py wedge.py  (+ nós: extractor/classifier/rag/...)
+  rag/        pipeline.py           (BM25 puro + rerank opcional)
+  signals/    connectors.py         (GitHub/HF/arXiv, graciosos)
+  eval/       gold_eval.py calibrate.py
+  api/        app.py                (dashboard stdlib, zero-dep)
+  web/        index.html            (Mapa de Alavancagem)
+data/
+  gold/       gold_set.json build_gold.py    (27 startups BR rotuladas)
+  nvidia_kb/  *.md                            (base de conhecimento NVIDIA)
+tests/        test_core.py
 ```
 
----
+## Testes
 
-## 🔒 Notas
+```bash
+pip install pytest && PYTHONPATH=src pytest -q
+```
 
-- O scraping coleta **apenas informação pública** e mantém as URLs de origem como evidência.
-- A base NVIDIA é curada em `data/nvidia_kb/` com a fonte oficial citada em cada documento.
-- Sem `OPENROUTER_API_KEY` o pipeline não roda; o resto (RAG, dashboard) sobe e avisa o que falta.
-
-## 📄 Licença
-Projeto acadêmico (case NVIDIA). Uso educacional.
+Projeto acadêmico (case NVIDIA / Inteli). Uso educacional. Dados coletados de fontes públicas com rastreabilidade de URL.

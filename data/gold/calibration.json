@@ -1,0 +1,7 @@
+{
+  "native": 0.33,
+  "enabled": 0.05,
+  "tier_accuracy": 0.926,
+  "n": 27,
+  "note": "limiares calibrados por busca em grade sobre o gold set (flywheel)"
+}

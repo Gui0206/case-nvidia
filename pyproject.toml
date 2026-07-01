@@ -4,33 +4,27 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nvidia-startup-ai-radar"
-version = "1.0.0"
-description = "Multi-agent platform to discover, score and recommend NVIDIA tech for Brazilian AI-native startups"
+version = "0.2.0"
+description = "NVIDIA Startup AI Radar — encontra a startup onde a NVIDIA muda o desfecho (tese do Ponto de Alavancagem)."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "langgraph>=0.2.50",
-    "langchain-core>=0.3.20",
-    "langchain-openai>=0.2.10",
-    "pydantic>=2.7",
-    "pydantic-settings>=2.4",
-    "python-dotenv>=1.0",
-    "httpx>=0.27",
-    "trafilatura>=1.12",
-    "beautifulsoup4>=4.12",
-    "lxml>=5.2",
-    "ddgs>=6.0",
-    "tenacity>=9.0",
-    "qdrant-client>=1.12",
-    "fastembed>=0.4",
-    "rank-bm25>=0.2.2",
-    "cohere>=5.11",
-    "fastapi>=0.115",
-    "uvicorn[standard]>=0.32",
-    "jinja2>=3.1",
-    "python-multipart>=0.0.9",
-    "rich>=13.9",
-]
+license = { text = "Educational (case NVIDIA / Inteli)" }
+authors = [{ name = "Guilherme Marques" }]
+
+# O NÚCLEO (scoring determinístico, gold eval, IPI, mapa) roda só com stdlib.
+# Tudo abaixo é OPCIONAL e habilita camadas extras (LLM, RAG, API). Degradação graciosa.
+dependencies = []
+
+[project.optional-dependencies]
+llm   = ["httpx>=0.27"]
+rag   = ["qdrant-client>=1.9", "fastembed>=0.3", "rank-bm25>=0.2"]
+graph = ["langgraph>=0.2", "langchain-core>=0.3"]
+api   = ["fastapi>=0.110", "uvicorn>=0.29"]
+scrape= ["trafilatura>=1.8", "beautifulsoup4>=4.12", "httpx>=0.27"]
+all   = ["httpx>=0.27","qdrant-client>=1.9","fastembed>=0.3","rank-bm25>=0.2",
+         "langgraph>=0.2","langchain-core>=0.3","fastapi>=0.110","uvicorn>=0.29",
+         "trafilatura>=1.8","beautifulsoup4>=4.12"]
+dev   = ["pytest>=8.0"]
 
 [project.scripts]
 radar = "nvidia_radar.cli:main"
@@ -39,4 +33,4 @@ radar = "nvidia_radar.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-nvidia_radar = ["py.typed"]
+nvidia_radar = ["web/*.html", "web/*.js", "web/*.css"]

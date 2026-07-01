@@ -1,209 +1,136 @@
-"""Pydantic data models shared across the whole pipeline.
+"""Contratos de dados (stdlib puro — sem dependência externa).
 
-These are the contracts between agents: the Extractor fills :class:`StartupProfile`
-fields, the Classifier fills :class:`MaturityScore` / :class:`LabThreat` / gaps, the
-RAG + Recommender fill :class:`Recommendation`, and the Briefing reads everything.
+Um SignalSet é o conjunto de sinais observáveis de uma startup (produzidos pelo
+Extractor/conectores, ou carregados do gold set). O scoring determinístico consome
+SignalSet e produz scores rastreáveis.
 """
 from __future__ import annotations
 
-from typing import Literal
-
-from pydantic import BaseModel, Field, field_validator
-
-Classification = Literal["AI-native", "AI-enabled", "non-AI", "unknown"]
-Severity = Literal["baixa", "média", "alta"]
-Priority = Literal["alta", "média", "baixa"]
-ThreatLevel = Literal["baixo", "médio", "alto", "crítico"]
-
-_SCORE_FIELDS = (
-    "proprietary_data", "model_engineering", "inference_optimization",
-    "workflow_depth", "ai_in_product", "defensibility", "overall",
-)
+from dataclasses import dataclass, field, asdict
+from typing import Any
 
 
-def _clamp(v: object) -> int:
-    try:
-        return max(0, min(100, int(round(float(v)))))  # type: ignore[arg-type]
-    except (TypeError, ValueError):
-        return 0
+def clamp(v: float, lo: float = 0.0, hi: float = 1.0) -> float:
+    return max(lo, min(hi, v))
 
 
-# --------------------------------------------------------------------------- #
-# Search planning
-# --------------------------------------------------------------------------- #
-class SearchPlan(BaseModel):
-    interpreted_query: str = Field(description="Reformulation of the user's intent")
-    sector_focus: list[str] = Field(default_factory=list)
-    queries: list[str] = Field(default_factory=list, description="Discovery search queries")
-    candidate_startups: list[str] = Field(
-        default_factory=list, description="Known startup names to look up directly"
-    )
-    priority_sources: list[str] = Field(default_factory=list)
-    notes: str | None = None
-
-
-# --------------------------------------------------------------------------- #
-# Raw scraped material
-# --------------------------------------------------------------------------- #
-class RawSource(BaseModel):
-    url: str
-    title: str | None = None
-    text: str = ""
-    startup_hint: str | None = None
-    fetched_via: str = "httpx"
-
-
-# --------------------------------------------------------------------------- #
-# Structured company facts (Extractor output)
-# --------------------------------------------------------------------------- #
-class Founder(BaseModel):
-    name: str
-    role: str | None = None
-    linkedin: str | None = None
-    background: str | None = None
-
-
-class Evidence(BaseModel):
+@dataclass
+class Evidence:
     claim: str
     source_url: str = ""
+    source_type: str = ""          # github | huggingface | arxiv | jobs | news | site | footprint
     snippet: str = ""
     confidence: float = 0.5
 
-    @field_validator("confidence")
+
+@dataclass
+class SignalSet:
+    """Sinais observáveis. `active` = features detectadas (nomes do dicionário de features).
+
+    Campos extras (modality, model_class...) permitem regras contínuas.
+    """
+    active: set[str] = field(default_factory=set)
+    modality: str = "text"                 # text | voice | vision | robotics | multimodal | data
+    model_class: str = "none"              # none | small | 7b | 70b | 405b+
+    evidence: list[Evidence] = field(default_factory=list)
+
+    def has(self, name: str) -> bool:
+        return name in self.active
+
     @classmethod
-    def _clip_conf(cls, v: float) -> float:
-        try:
-            return max(0.0, min(1.0, float(v)))
-        except (TypeError, ValueError):
-            return 0.5
+    def from_names(cls, names, **kw) -> "SignalSet":
+        return cls(active=set(names), **kw)
 
 
-# --------------------------------------------------------------------------- #
-# AI-native maturity scoring  (the differentiator)
-# --------------------------------------------------------------------------- #
-class MaturityScore(BaseModel):
-    """Six-dimensional AI-native maturity rubric (each 0-100)."""
+@dataclass
+class DimensionScore:
+    name: str
+    score: float                            # 0..1
+    fired: list[str] = field(default_factory=list)   # features que dispararam (rastreabilidade)
+    has_evidence: bool = True
 
-    proprietary_data: int = Field(description="Owns unique / proprietary data assets")
-    model_engineering: int = Field(description="Trains, fine-tunes or post-trains its own models")
-    inference_optimization: int = Field(description="Cost/latency engineering of inference & serving")
-    workflow_depth: int = Field(description="Depth of workflow / end-to-end outcome ownership")
-    ai_in_product: int = Field(description="How central AI is to the core product value")
-    defensibility: int = Field(description="Moat against foundational-lab commoditization")
-    overall: int = Field(description="Overall AI-native maturity 0-100")
-    rationale: str = ""
 
-    @field_validator(*_SCORE_FIELDS, mode="before")
-    @classmethod
-    def _clamp_scores(cls, v: object) -> int:
-        return _clamp(v)
+@dataclass
+class MaturityScore:
+    overall: float                          # 0..1
+    dimensions: dict[str, DimensionScore] = field(default_factory=dict)
+    tier: str = "unknown"                   # AI-native | AI-enabled | non-AI | unknown
+    confidence: str = "média"               # alta | média | baixa
 
-    def radar(self) -> dict[str, int]:
+    def to_dict(self) -> dict:
         return {
-            "Dados proprietários": self.proprietary_data,
-            "Engenharia de modelos": self.model_engineering,
-            "Otimização de inferência": self.inference_optimization,
-            "Profundidade de workflow": self.workflow_depth,
-            "IA no produto": self.ai_in_product,
-            "Defensibilidade": self.defensibility,
+            "overall": round(self.overall, 3),
+            "tier": self.tier,
+            "confidence": self.confidence,
+            "dimensions": {k: {"score": round(v.score, 3), "fired": v.fired,
+                               "has_evidence": v.has_evidence}
+                           for k, v in self.dimensions.items()},
         }
 
 
-class LabThreat(BaseModel):
-    """How exposed the startup is to displacement by big foundational labs."""
+@dataclass
+class LeverageScore:
+    ldr: float                              # 0..1  Lab Displacement Risk
+    res: float                              # 0..1  Resgatabilidade NVIDIA
+    leverage: float                         # ldr * res
+    ldr_fired: list[str] = field(default_factory=list)
+    res_fired: list[str] = field(default_factory=list)
+    confidence: str = "média"
+    quadrant: str = ""                      # leitura da matriz
 
-    risk_score: int = Field(description="0-100, higher = more easily commoditized by big labs")
-    level: ThreatLevel = "médio"
-    rationale: str = ""
-    threat_vectors: list[str] = Field(default_factory=list)
-    moats: list[str] = Field(default_factory=list)
-
-    @field_validator("risk_score", mode="before")
-    @classmethod
-    def _clamp_risk(cls, v: object) -> int:
-        return _clamp(v)
-
-
-class Gap(BaseModel):
-    area: str
-    description: str
-    severity: Severity = "média"
+    def to_dict(self) -> dict:
+        return {"ldr": round(self.ldr, 3), "res": round(self.res, 3),
+                "leverage": round(self.leverage, 3), "quadrant": self.quadrant,
+                "confidence": self.confidence,
+                "ldr_fired": self.ldr_fired, "res_fired": self.res_fired}
 
 
-# --------------------------------------------------------------------------- #
-# Recommendation engine output
-# --------------------------------------------------------------------------- #
-class Citation(BaseModel):
-    technology: str = ""
-    source: str = ""
-    snippet: str = ""
-    score: float | None = None
+@dataclass
+class ComputeScore:
+    score: float                            # 0..1
+    magnitude: float
+    pain: float
+    confidence: str = "média"
+    assumptions: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {"score": round(self.score, 3), "magnitude": round(self.magnitude, 3),
+                "pain": round(self.pain, 3), "confidence": self.confidence,
+                "assumptions": self.assumptions}
 
 
-class Recommendation(BaseModel):
-    technology: str
-    category: str | None = None
-    fit_score: int = Field(default=70, description="0-100 fit between startup gap and tech")
-    priority: Priority = "média"
-    complexity: Literal["baixa", "média", "alta"] = "média"
-    technical_justification: str = ""
-    business_justification: str = ""
-    next_action: str = ""
-    addresses_gaps: list[str] = Field(default_factory=list)
-    citations: list[Citation] = Field(default_factory=list)
+@dataclass
+class IPI:
+    ipi: int                                # 0..100
+    confidence: str
+    breakdown: dict[str, float]
+    weights: dict[str, float]
+    assumptions: list[str] = field(default_factory=list)
 
-    @field_validator("fit_score", mode="before")
-    @classmethod
-    def _clamp_fit(cls, v: object) -> int:
-        return _clamp(v)
+    def to_dict(self) -> dict:
+        return {"ipi": self.ipi, "confidence": self.confidence,
+                "breakdown": {k: round(v, 3) for k, v in self.breakdown.items()},
+                "weights": self.weights, "assumptions": self.assumptions}
 
 
-# --------------------------------------------------------------------------- #
-# The full startup record (accumulated through the graph)
-# --------------------------------------------------------------------------- #
-class StartupProfile(BaseModel):
+@dataclass
+class Diagnosis:
+    """Resultado completo do diagnóstico de uma startup."""
     name: str
-    website: str | None = None
-    location: str | None = None
-    sector: str | None = None
-    one_liner: str | None = None
-    description: str | None = None
-    products: list[str] = Field(default_factory=list)
-    founders: list[Founder] = Field(default_factory=list)
-    funding: str | None = None
-    employees: str | None = None
-    clients: list[str] = Field(default_factory=list)
-    ai_technologies: list[str] = Field(default_factory=list)
+    vertical: str = ""
+    aims: MaturityScore | None = None
+    leverage: LeverageScore | None = None
+    compute: ComputeScore | None = None
+    ipi: IPI | None = None
+    ai_washing: bool = False
+    washing_gap: float = 0.0
 
-    # classification + diagnosis
-    classification: Classification = "unknown"
-    classification_rationale: str | None = None
-    maturity: MaturityScore | None = None
-    lab_threat: LabThreat | None = None
-    gaps: list[Gap] = Field(default_factory=list)
-    inception_fit: int | None = None
-
-    # evidence + validation
-    evidence: list[Evidence] = Field(default_factory=list)
-    sources: list[str] = Field(default_factory=list)
-    evidence_quality: str | None = None
-    confidence: float | None = None
-    needs_more_evidence: bool = False
-
-    # recommendations + briefing
-    recommendations: list[Recommendation] = Field(default_factory=list)
-    briefing: str | None = None
-
-
-# --------------------------------------------------------------------------- #
-# A complete radar run
-# --------------------------------------------------------------------------- #
-class RadarRun(BaseModel):
-    run_id: str
-    query: str
-    created_at: str
-    status: str = "running"
-    startups: list[StartupProfile] = Field(default_factory=list)
-    portfolio_summary: str | None = None
-    errors: list[str] = Field(default_factory=list)
-    stats: dict = Field(default_factory=dict)
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name, "vertical": self.vertical,
+            "aims": self.aims.to_dict() if self.aims else None,
+            "leverage": self.leverage.to_dict() if self.leverage else None,
+            "compute": self.compute.to_dict() if self.compute else None,
+            "ipi": self.ipi.to_dict() if self.ipi else None,
+            "ai_washing": self.ai_washing, "washing_gap": round(self.washing_gap, 3),
+        }
